@@ -1,0 +1,56 @@
+---
+title: "Billboard Graphic"
+execute:
+    echo: false
+---
+
+This is a Quarto website.
+
+To learn more about Quarto websites visit <https://quarto.org/docs/websites>.
+
+```{r}
+suppressPackageStartupMessages(library(tidyverse))
+library(tidyverse)
+library(tidyr)
+```
+
+```{r}
+#| label: billboard-plot
+#| warning: false
+#| message: false
+
+# Load billboard data
+data("billboard", package = "tidyr")
+
+# Convert wide to long format
+billboard_long <- billboard %>%
+  pivot_longer(cols = starts_with("wk"), names_to = "week", values_to = "rank", values_drop_na = TRUE) %>%
+  mutate(
+    week = parse_number(week),
+    artist_track = paste(artist, track, sep = " – ")
+  )
+
+# Filter to a few top songs for clarity
+top_songs <- billboard_long %>%
+  filter(track %in% c("Smooth", "Breathe", "Amazed"))
+
+# Plot how their ranks changed over weeks
+ggplot(top_songs, aes(x = week, y = rank, color = artist_track)) +
+  geom_line(size = 1.2) +
+  scale_y_reverse() +  # Because #1 is top rank
+  labs(
+    title = "Billboard Chart Performance Over Time",
+    subtitle = "Tracking the weekly ranks of top hits like 'Smooth', 'Breathe', and 'Amazed'",
+    x = "Week on Chart",
+    y = "Billboard Rank (Lower is Better)",
+    color = "Song"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+    plot.subtitle = element_text(size = 12, hjust = 0.5),
+    axis.text = element_text(size = 10),
+    legend.position = "bottom"
+  )
+```
+
